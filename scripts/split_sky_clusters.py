@@ -41,10 +41,7 @@ def next_line():
         line = next(line_iter)
         line = line.rstrip()
         comment_pos = line.find('#')
-        if comment_pos != -1:
-            line_no_comment = line[:comment_pos].rstrip()
-        else:
-            line_no_comment = line
+        line_no_comment = line[:comment_pos].rstrip() if comment_pos != -1 else line
         return line, line_no_comment
     except StopIteration:
         return None, None # Indicate EOF

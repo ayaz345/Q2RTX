@@ -56,7 +56,7 @@ class IesFile:
             return result
 
         header_line = f.readline().strip()
-        if not header_line in ["IESNA91", "IESNA:LM-63-1995", "IESNA:LM-63-2002"]:
+        if header_line not in ["IESNA91", "IESNA:LM-63-1995", "IESNA:LM-63-2002"]:
             raise Exception(f"Unexpected header line: {header_line}")
 
         # Collect IES keywords for inclusion in .png, to allow identification of source data later
@@ -124,10 +124,7 @@ angle_function = scipy.interpolate.interp1d(ies_file.vert_angles, ies_file.light
 output_values = numpy.zeros(res)
 for x in range(0, res):
     angle = (x / (res - 1)) * 90
-    if angle <= max_angle:
-        interp = angle_function(angle)
-    else:
-        interp = 0
+    interp = angle_function(angle) if angle <= max_angle else 0
     output_values[x] = interp
 
 # Write image: normalized light values, 16bpc gray scale

@@ -16,31 +16,28 @@ if __name__ == "__main__":
         print('Usage: genptr.py <file> [...]')
         sys.exit(1)
 
-    exprs = '|'.join(p.replace('_', '\\.') for p in pointers if not p == 'moveinfo_endfunc')
+    exprs = '|'.join(
+        p.replace('_', '\\.') for p in pointers if p != 'moveinfo_endfunc'
+    )
     regex = re.compile(r'->\s*(%s)\s*=\s*&?\s*(\w+)' % exprs, re.ASCII)
     regex2 = re.compile(r'\b(?:Angle)?Move_Calc\s*\(.+,\s*(\w+)\s*\)', re.ASCII)
 
-    types = {}
-    for p in pointers:
-        types[p] = []
-
+    types = {p: [] for p in pointers}
     for a in sys.argv[1:]:
         with open(a) as f:
             for line in f:
                 if not line.lstrip().startswith('//'):
-                    match = regex.search(line)
-                    if match:
+                    if match := regex.search(line):
                         t = types[match[1].replace('.', '_')]
                         p = match[2]
-                        if not p in t and p != 'NULL':
+                        if p not in t and p != 'NULL':
                             t.append(p)
                         continue
 
-                    match = regex2.search(line)
-                    if match:
+                    if match := regex2.search(line):
                         t = types['moveinfo_endfunc']
                         p = match[1]
-                        if not p in t:
+                        if p not in t:
                             t.append(p)
 
 
@@ -61,6 +58,6 @@ if __name__ == "__main__":
     for k, v in types.items():
         for p in sorted(v, key=str.lower):
             amp = '&' if k == 'monsterinfo_currentmove' else ''
-            print('{ %s, %s%s },' % ('P_' + k, amp, p))
+            print('{ %s, %s%s },' % (f'P_{k}', amp, p))
     print('};')
     print('const int num_save_ptrs = sizeof(save_ptrs) / sizeof(save_ptrs[0]);')
